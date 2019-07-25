@@ -7,7 +7,6 @@
     <ProjectReference Include="..\..\..\src\Spring\Spring.Messaging.Nms\Spring.Messaging.Nms.csproj" />
     <ProjectReference Include="..\..\..\src\Spring\Spring.Messaging\Spring.Messaging.csproj" />
     <ProjectReference Include="..\..\..\src\Spring\Spring.Testing.NUnit\Spring.Testing.NUnit.csproj" />
-    <ProjectReference Include="..\Spring.Core.Tests\Spring.Core.Tests.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Apache.NMS" Version="1.8.0" />
