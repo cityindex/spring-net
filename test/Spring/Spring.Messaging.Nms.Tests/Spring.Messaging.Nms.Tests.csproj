@@ -12,7 +12,7 @@
   <ItemGroup>
     <PackageReference Include="FakeItEasy" Version="$(FakeItEasyVersion)" />
     <PackageReference Include="FakeItEasy.Analyzer" Version="$(FakeItEasyVersion)" PrivateAssets="All" />
-    <PackageReference Include="Apache.NMS" Version="$(ApacheNmsVersion)" />
+    <PackageReference Include="Apache.NMS" Version="1.8.0" />
     <PackageReference Include="Apache.NMS.ActiveMQ" Version="$(ApacheNmsVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestSDKVersion)" />
     <PackageReference Include="NUnit" Version="$(NUnitVersion)" />

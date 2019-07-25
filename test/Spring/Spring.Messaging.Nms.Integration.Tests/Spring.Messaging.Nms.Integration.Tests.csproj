@@ -10,7 +10,7 @@
     <ProjectReference Include="..\Spring.Core.Tests\Spring.Core.Tests.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Apache.NMS" Version="$(ApacheNmsVersion)" />
+    <PackageReference Include="Apache.NMS" Version="1.8.0" />
     <PackageReference Include="Apache.NMS.ActiveMQ" Version="$(ApacheNmsVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestSDKVersion)" />
     <PackageReference Include="NUnit" Version="$(NUnitVersion)" />
