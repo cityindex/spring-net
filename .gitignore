@@ -80,7 +80,6 @@ PrecompiledWeb
 /src/Spring/Spring.Testing.Microsoft/Spring.Testing.Microsoft.xml
 /src/Spring/Spring.Web.Conversation.NHibernate3/Spring.Web.Conversation.NHibernate3.xml
 
-/src/Spring/GenCommonAssemblyInfo.cs
 /.project
 /examples/Spring/Spring.Mvc3QuickStart/packages
 /examples/Spring/Spring.Mvc4QuickStart/packages
