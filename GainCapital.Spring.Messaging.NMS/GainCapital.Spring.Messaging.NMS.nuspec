@@ -20,6 +20,7 @@
         <dependency id="System.Reflection.Emit.Lightweight" version="4.3.0" />
         <dependency id="System.Reflection.Primitives" version="4.3.0" />
         <dependency id="Antlr3.Runtime" version="3.5.1" />
+        <dependency id="Common.Logging" version="3.4.1" />
       </group>
     </dependencies>
   </metadata>
