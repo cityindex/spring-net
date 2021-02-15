@@ -3,6 +3,7 @@
     <TargetFrameworks>netstandard2.0;$(TargetFullFrameworkVersion)</TargetFrameworks>
     <Description>Interfaces and classes that provide Data access support in Spring.Net</Description>
     <NoWarn>1591</NoWarn>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Spring.Aop\Spring.Aop.csproj" />
@@ -36,5 +37,8 @@
     <Compile Remove="Data\Support\DefaultServiceDomainAdapter.cs" />
     <Compile Remove="Data\Support\IServiceDomainAdapter.cs" />
     <Compile Remove="Data\Support\SimpleServiceConfig.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Resources.Extensions" Version="4.6.0" />
   </ItemGroup>
 </Project>

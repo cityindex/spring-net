@@ -17,9 +17,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Apache.NMS;
 using Common.Logging;
 using Spring.Collections;
+using Spring.Messaging.Nms.Support;
 using Spring.Util;
 
 namespace Spring.Messaging.Nms.Connections
@@ -192,6 +194,11 @@ namespace Spring.Messaging.Nms.Connections
         /// </returns>
         public override ISession GetSession(IConnection con, AcknowledgementMode mode)
         {
+            return GetSessionAsync(con, mode).GetAsyncResult();
+        }
+        
+        public override async Task<ISession> GetSessionAsync(IConnection con, AcknowledgementMode mode)
+        {
             List<ISession> sessionList;
             lock (cachedSessions)
             {
@@ -222,7 +229,7 @@ namespace Spring.Messaging.Nms.Connections
             }
             else
             {
-                ISession targetSession = con.CreateSession(mode);
+                ISession targetSession = await con.CreateSessionAsync(mode).Awaiter();
                 if (Log.IsDebugEnabled)
                 {
                     Log.Debug("Creating cached Session for mode " + mode + ": " + targetSession);

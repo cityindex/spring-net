@@ -17,11 +17,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Common.Logging;
 using Spring.Collections;
 using Spring.Transaction.Support;
 using Spring.Util;
 using Apache.NMS;
+using Spring.Messaging.Nms.Support;
 
 namespace Spring.Messaging.Nms.Connections
 {
@@ -241,6 +243,42 @@ namespace Spring.Messaging.Nms.Connections
             foreach (IConnection connection in connections)
             {
                 ConnectionFactoryUtils.ReleaseConnection(connection, connectionFactory, true);
+            }
+            connections.Clear();
+            sessions.Clear();
+            sessionsPerIConnection.Clear();            
+        } 
+        
+        /// <summary>
+        /// Commits all sessions.
+        /// </summary>
+        public virtual async Task CommitAllAsync()
+        {
+            foreach (ISession session in sessions)
+            {
+				await session.CommitAsync().Awaiter();
+            }
+        }
+
+        /// <summary>
+        /// Closes all sessions then stops and closes all connections, in that order.
+        /// </summary>
+        public virtual async Task CloseAllAsync()
+        {
+            foreach (ISession session in sessions)
+            {
+                try
+                {
+                    await session.CloseAsync().Awaiter();
+                }
+                catch (Exception ex)
+                {
+                    logger.Debug("Could not close NMS ISession after transaction", ex);
+                }
+            }
+            foreach (IConnection connection in connections)
+            {
+                await ConnectionFactoryUtils.ReleaseConnectionAsync(connection, connectionFactory, true).Awaiter();
             }
             connections.Clear();
             sessions.Clear();

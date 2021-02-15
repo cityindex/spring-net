@@ -13,7 +13,9 @@
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
 
+    <ApacheNmsApiVersion>2.0.0</ApacheNmsApiVersion>
     <ApacheNmsVersion>1.7.1</ApacheNmsVersion>
+    
     <CommonLoggingVersion>3.4.1</CommonLoggingVersion>
     <Log4NetVersion>2.0.8</Log4NetVersion>
 
@@ -29,7 +31,7 @@
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
     <LangVersion>latest</LangVersion>
-    <TargetFullFrameworkVersion>net452</TargetFullFrameworkVersion>
+    <TargetFullFrameworkVersion>net472</TargetFullFrameworkVersion>
 
   </PropertyGroup>
 

@@ -32,13 +32,15 @@
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 
     <ComVisible>False</ComVisible>
-
+    
+    <ApacheNmsApiVersion>2.0.0</ApacheNmsApiVersion>
+    
     <DebugSymbols>True</DebugSymbols>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
     <LangVersion>latest</LangVersion>
-    <TargetFullFrameworkVersion>net452</TargetFullFrameworkVersion>
+    <TargetFullFrameworkVersion>net472</TargetFullFrameworkVersion>
 
   </PropertyGroup>
   

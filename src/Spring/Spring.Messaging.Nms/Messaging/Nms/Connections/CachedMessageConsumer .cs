@@ -19,6 +19,7 @@
 #endregion
 
 using System;
+using System.Threading.Tasks;
 using Apache.NMS;
 
 namespace Spring.Messaging.Nms.Connections
@@ -52,6 +53,13 @@ namespace Spring.Messaging.Nms.Connections
             get { return target; }
         }
 
+        public string MessageSelector {
+            get
+            {
+                return target.MessageSelector;
+            }
+        }
+
         /// <summary>
         /// Register for message events. 
         /// </summary>
@@ -76,6 +84,11 @@ namespace Spring.Messaging.Nms.Connections
             return this.target.Receive();
         }
 
+        public Task<IMessage> ReceiveAsync()
+        {
+            return this.target.ReceiveAsync();
+        }
+
         /// <summary>
         /// Receives the next message that arrives within the specified timeout interval.
         /// </summary>
@@ -84,6 +97,11 @@ namespace Spring.Messaging.Nms.Connections
         public IMessage Receive(TimeSpan timeout)
         {
             return this.target.Receive(timeout);
+        }
+
+        public Task<IMessage> ReceiveAsync(TimeSpan timeout)
+        {
+            return this.target.ReceiveAsync(timeout);
         }
 
         /// <summary>
@@ -101,6 +119,12 @@ namespace Spring.Messaging.Nms.Connections
         public void Close()
         {
             // It's a cached MessageConsumer...
+        }
+
+        public Task CloseAsync()
+        {
+            // It's a cached MessageConsumer...
+            return Task.FromResult(true);
         }
 
         /// <summary>

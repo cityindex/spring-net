@@ -15,6 +15,5 @@
     <Compile Include="..\GenCommonAssemblyInfo.cs">
       <Link>GenCommonAssemblyInfo.cs</Link>
     </Compile>
-    <None Include="Spring.Testing.NUnit.build" />
   </ItemGroup>
 </Project>

@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Apache.NMS;
 
 namespace Spring.Messaging.Nms.Connections
@@ -42,6 +43,16 @@ namespace Spring.Messaging.Nms.Connections
             return new TestSession();
         }
 
+        public Task<ISession> CreateSessionAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ISession> CreateSessionAsync(AcknowledgementMode acknowledgementMode)
+        {
+            throw new NotImplementedException();
+        }
+
         public ISession CreateSession(AcknowledgementMode acknowledgementMode, TimeSpan requestTimeout)
         {
             throw new NotImplementedException();
@@ -50,6 +61,11 @@ namespace Spring.Messaging.Nms.Connections
         public void Close()
         {
             closeCount++;
+        }
+
+        public Task CloseAsync()
+        {
+            throw new NotImplementedException();
         }
 
         public void PurgeTempDestinations()
@@ -102,6 +118,11 @@ namespace Spring.Messaging.Nms.Connections
             startCount++;
         }
 
+        public Task StartAsync()
+        {
+            throw new NotImplementedException();
+        }
+
         public bool IsStarted
         {
             get
@@ -113,6 +134,11 @@ namespace Spring.Messaging.Nms.Connections
 
         public void Stop()
         {         
+        }
+
+        public Task StopAsync()
+        {
+            throw new NotImplementedException();
         }
 
         public void FireExcpetionEvent(Exception e)

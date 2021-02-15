@@ -1,7 +1,7 @@
 #region License
 
 /*
- * Copyright © 2002-2011 the original author or authors.
+ * Copyright ï¿½ 2002-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,11 @@
 #endregion
 
 using System;
+using System.Threading.Tasks;
 using Apache.NMS;
 using Common.Logging;
 using Spring.Messaging.Nms.Core;
+using Spring.Messaging.Nms.Support;
 using Spring.Objects.Factory;
 using Spring.Util;
 
@@ -59,7 +61,7 @@ namespace Spring.Messaging.Nms.Connections
     {
         #region Logging Definition
 
-        private static readonly ILog LOG = LogManager.GetLogger(typeof (SingleConnectionFactory));
+        private static readonly ILog LOG = LogManager.GetLogger(typeof(SingleConnectionFactory));
 
         #endregion
 
@@ -92,8 +94,7 @@ namespace Spring.Messaging.Nms.Connections
         /// <summary>
         /// Synchronization monitor for the shared Connection
         /// </summary>
-        private object connectionMonitor = new object();
-
+        private SemaphoreSlimLock connectionMonitor = new SemaphoreSlimLock();
 
         #endregion
 
@@ -128,7 +129,7 @@ namespace Spring.Messaging.Nms.Connections
         public SingleConnectionFactory(IConnectionFactory targetConnectionFactory)
         {
             AssertUtils.ArgumentNotNull(targetConnectionFactory, "targetConnectionFactory",
-                                        "TargetSession ConnectionFactory must not be null");
+                "TargetSession ConnectionFactory must not be null");
             this.targetConnectionFactory = targetConnectionFactory;
         }
 
@@ -165,7 +166,7 @@ namespace Spring.Messaging.Nms.Connections
 
         /// <summary>
         /// Gets or sets the exception listener implementation that should be registered
-	    /// with with the single Connection created by this factory, if any.
+        /// with with the single Connection created by this factory, if any.
         /// </summary>
         /// <value>The exception listener.</value>
         public IExceptionListener ExceptionListener
@@ -197,6 +198,36 @@ namespace Spring.Messaging.Nms.Connections
         {
             get { return reconnectOnException; }
             set { reconnectOnException = value; }
+        }
+
+        public INMSContext CreateContext(string userName, string password, AcknowledgementMode acknowledgementMode)
+        {
+            // TODO
+            throw new NotImplementedException();
+        }
+
+        public Task<INMSContext> CreateContextAsync()
+        {
+            // TODO
+            throw new NotImplementedException();
+        }
+
+        public Task<INMSContext> CreateContextAsync(AcknowledgementMode acknowledgementMode)
+        {
+            // TODO
+            throw new NotImplementedException();
+        }
+
+        public Task<INMSContext> CreateContextAsync(string userName, string password)
+        {
+            // TODO
+            throw new NotImplementedException();
+        }
+
+        public Task<INMSContext> CreateContextAsync(string userName, string password, AcknowledgementMode acknowledgementMode)
+        {
+            // TODO
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -250,9 +281,9 @@ namespace Spring.Messaging.Nms.Connections
         /// Gets the connection monitor.
         /// </summary>
         /// <value>The connection monitor.</value>
-        internal object ConnectionMonitor
+        internal SemaphoreSlimLock ConnectionMonitor
         {
-            get { return connectionMonitor;  }
+            get { return connectionMonitor; }
         }
 
         /// <summary>
@@ -263,7 +294,7 @@ namespace Spring.Messaging.Nms.Connections
         /// </value>
         internal bool IsStarted
         {
-            get { return started;}
+            get { return started; }
             set { started = value; }
         }
 
@@ -277,12 +308,13 @@ namespace Spring.Messaging.Nms.Connections
         /// <returns>A single shared connection</returns>
         public IConnection CreateConnection()
         {
-            lock (connectionMonitor)
+            using(connectionMonitor.Lock())
             {
                 if (connection == null)
                 {
-                    InitConnection();
+                    InitConnectionAsync(false).GetAsyncResult();
                 }
+
                 return connection;
             }
         }
@@ -298,32 +330,71 @@ namespace Spring.Messaging.Nms.Connections
             throw new InvalidOperationException("SingleConnectionFactory does not support custom username and password.");
         }
 
+        public async Task<IConnection> CreateConnectionAsync()
+        {
+            using(await connectionMonitor.LockAsync().Awaiter())
+            {
+                if (connection == null)
+                {
+                    await InitConnectionAsync(false).Awaiter();
+                }
+
+                return connection;
+            }
+        }
+
+        public Task<IConnection> CreateConnectionAsync(string userName, string password)
+        {
+            throw new InvalidOperationException("SingleConnectionFactory does not support custom username and password.");
+        }
+
+        public INMSContext CreateContext()
+        {
+            //TODO
+            throw new NotImplementedException();
+        }
+
+        public INMSContext CreateContext(AcknowledgementMode acknowledgementMode)
+        {
+            //TODO
+            throw new NotImplementedException();
+        }
+
+        public INMSContext CreateContext(string userName, string password)
+        {
+            //TODO
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         /// <summary>
         /// Initialize the underlying shared Connection. Closes and reinitializes the Connection if an underlying
-	    /// Connection is present already.
+        /// Connection is present already.
         /// </summary>
-        public void InitConnection()
+        public async Task InitConnectionAsync(bool acquireLock = true)
         {
             if (TargetConnectionFactory == null)
             {
                 throw new ArgumentException(
                     "'TargetConnectionFactory' is required for lazily initializing a Connection");
             }
-            lock (connectionMonitor)
+
+            using (await connectionMonitor.LockAsync(acquireLock).Awaiter())
             {
                 if (this.target != null)
                 {
                     CloseConnection(this.target);
                 }
+
                 this.target = DoCreateConnection();
                 PrepareConnection(this.target);
                 if (LOG.IsDebugEnabled)
                 {
                     LOG.Info("Established shared NMS Connection: " + this.target);
                 }
-                this.connection = GetSharedConnection(target);
+
+                this.connection = GetSharedConnection(target, acquireLock);
             }
         }
 
@@ -338,8 +409,8 @@ namespace Spring.Messaging.Nms.Connections
 
         /// <summary>
         /// Prepares the connection before it is exposed.
-	    /// The default implementation applies ExceptionListener and client id.
-	    /// Can be overridden in subclasses.
+        /// The default implementation applies ExceptionListener and client id.
+        /// Can be overridden in subclasses.
         /// </summary>
         /// <param name="con">The Connection to prepare.</param>
         /// <exception cref="NMSException">if thrown by any NMS API methods.</exception>
@@ -349,11 +420,13 @@ namespace Spring.Messaging.Nms.Connections
             {
                 con.ClientId = ClientId;
             }
+
             if (reconnectOnException)
             {
                 //add reconnect exception handler first to exception chain.
                 con.ExceptionListener += this.OnException;
             }
+
             if (ExceptionListener != null)
             {
                 con.ExceptionListener += ExceptionListener.OnException;
@@ -366,10 +439,15 @@ namespace Spring.Messaging.Nms.Connections
         /// <param name="con">The connection to operate on.</param>
         /// <param name="mode">The session ack mode.</param>
         /// <returns>the Session to use, or <code>null</code> to indicate
-	    /// creation of a raw standard Session</returns>  
+        /// creation of a raw standard Session</returns>  
         public virtual ISession GetSession(IConnection con, AcknowledgementMode mode)
         {
             return null;
+        } 
+        
+        public virtual Task<ISession> GetSessionAsync(IConnection con, AcknowledgementMode mode)
+        {
+            return Task.FromResult((ISession) null);
         }
 
         /// <summary>
@@ -391,6 +469,7 @@ namespace Spring.Messaging.Nms.Connections
             {
                 LOG.Debug("Closing shared NMS Connection: " + this.target);
             }
+
             try
             {
                 try
@@ -398,13 +477,15 @@ namespace Spring.Messaging.Nms.Connections
                     if (this.started)
                     {
                         this.started = false;
-                        con.Stop();                        
+                        con.Stop();
                     }
-                } finally
+                }
+                finally
                 {
                     con.Close();
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 LOG.Warn("Could not close shared NMS connection.", ex);
             }
@@ -441,12 +522,13 @@ namespace Spring.Messaging.Nms.Connections
         /// </summary>
         public virtual void ResetConnection()
         {
-            lock (connectionMonitor)
+            using(connectionMonitor.Lock())
             {
                 if (this.target != null)
                 {
                     CloseConnection(this.target);
                 }
+
                 this.target = null;
                 this.connection = null;
             }
@@ -454,21 +536,21 @@ namespace Spring.Messaging.Nms.Connections
 
         /// <summary>
         /// Wrap the given Connection with a proxy that delegates every method call to it
-	    /// but suppresses close calls. This is useful for allowing application code to
-	    /// handle a special framework Connection just like an ordinary Connection from a
-	    /// ConnectionFactory.
+        /// but suppresses close calls. This is useful for allowing application code to
+        /// handle a special framework Connection just like an ordinary Connection from a
+        /// ConnectionFactory.
         /// </summary>
         /// <param name="target">The original connection to wrap.</param>
         /// <returns>the wrapped connection</returns>
-        protected virtual IConnection GetSharedConnection(IConnection target)
+        protected virtual IConnection GetSharedConnection(IConnection target, bool acquireLock = true)
         {
-            lock (connectionMonitor)
+            using(connectionMonitor.Lock(acquireLock))
             {
                 return new CloseSupressingConnection(this, target);
             }
         }
     }
-
+    
     internal class CloseSupressingConnection : IConnection
     {
         private IConnection target;
@@ -495,15 +577,20 @@ namespace Spring.Messaging.Nms.Connections
                     throw new ArgumentException(
                         "Setting of 'ClientID' property not supported on wrapper for shared Connection since" +
                         "this is a shared connection that may serve any number of clients concurrently." +
-                        "Set the 'ClientId' property on the SingleConnectionFactory instead.");    
+                        "Set the 'ClientId' property on the SingleConnectionFactory instead.");
                 }
-                
             }
         }
 
+    
         public void Close()
         {
             // don't pass the call to the target.
+        }
+
+        public Task CloseAsync()
+        {
+            return Task.FromResult(true); // no CompletedTask available
         }
 
         public ConsumerTransformerDelegate ConsumerTransformer
@@ -528,7 +615,16 @@ namespace Spring.Messaging.Nms.Connections
         {
             // Handle start method: track started state.
             target.Start();
-            lock (singleConnectionFactory.ConnectionMonitor)
+            using(singleConnectionFactory.ConnectionMonitor.Lock())
+            {
+                singleConnectionFactory.IsStarted = true;
+            }
+        }
+
+        public async Task StartAsync()
+        {
+            await target.StartAsync().Awaiter();
+            using(await singleConnectionFactory.ConnectionMonitor.LockAsync().Awaiter())
             {
                 singleConnectionFactory.IsStarted = true;
             }
@@ -537,6 +633,12 @@ namespace Spring.Messaging.Nms.Connections
         public void Stop()
         {
             //don't pass the call to the target as it would stop receiving for all clients sharing this connection.
+        }
+
+        public Task StopAsync()
+        {
+            //don't pass the call to the target as it would stop receiving for all clients sharing this connection.
+            return Task.FromResult(true);
         }
 
         public ISession CreateSession()
@@ -551,12 +653,29 @@ namespace Spring.Messaging.Nms.Connections
             {
                 return session;
             }
+
             return target.CreateSession(acknowledgementMode);
+        }
+
+        public Task<ISession> CreateSessionAsync()
+        {
+            return CreateSessionAsync(AcknowledgementMode.AutoAcknowledge);
+        }
+
+        public async Task<ISession> CreateSessionAsync(AcknowledgementMode acknowledgementMode)
+        {
+            ISession session = await singleConnectionFactory.GetSessionAsync(target, acknowledgementMode).Awaiter();
+            if (session != null)
+            {
+                return session;
+            }
+
+            return await target.CreateSessionAsync(acknowledgementMode).Awaiter();
         }
 
 
         #region Pass through implementations to the target connection
-        
+
         public void PurgeTempDestinations()
         {
             target.PurgeTempDestinations();
@@ -564,38 +683,20 @@ namespace Spring.Messaging.Nms.Connections
 
         public event ExceptionListener ExceptionListener
         {
-            add
-            {
-                target.ExceptionListener += value;
-            }
-            remove
-            {
-                target.ExceptionListener -= value;                
-            }
+            add { target.ExceptionListener += value; }
+            remove { target.ExceptionListener -= value; }
         }
 
         public event ConnectionInterruptedListener ConnectionInterruptedListener
         {
-            add
-            {
-                target.ConnectionInterruptedListener += value;
-            }
-            remove
-            {
-                target.ConnectionInterruptedListener -= value;
-            }
+            add { target.ConnectionInterruptedListener += value; }
+            remove { target.ConnectionInterruptedListener -= value; }
         }
 
         public event ConnectionResumedListener ConnectionResumedListener
         {
-            add
-            {
-                target.ConnectionResumedListener += value;
-            }
-            remove
-            {
-                target.ConnectionResumedListener -= value;
-            }
+            add { target.ConnectionResumedListener += value; }
+            remove { target.ConnectionResumedListener -= value; }
         }
 
 

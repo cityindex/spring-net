@@ -19,6 +19,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Apache.NMS;
 
 namespace Spring.Messaging.Nms.Connections
@@ -81,10 +82,14 @@ namespace Spring.Messaging.Nms.Connections
         /// </summary>
         public string UserName
         {
-            get => _userName;
+            get =>  _userName;
             set => _userName = string.IsNullOrWhiteSpace(value) ? null : value;
         }
 
+        private string UserNameInternal => threadLocalCredentials.Value != null ? threadLocalCredentials.Value.UserName : UserName;
+        private string PasswordInternal => threadLocalCredentials.Value != null ? threadLocalCredentials.Value.Password : Password;
+        
+        
         private string _password;
 
         /// <summary>
@@ -98,13 +103,7 @@ namespace Spring.Messaging.Nms.Connections
 
         public IConnection CreateConnection()
         {
-            var credentialsForCurrentThread = this.threadLocalCredentials.Value;
-            if (credentialsForCurrentThread != null)
-            {
-                return CreateConnectionForSpecificCredentials(credentialsForCurrentThread.UserName, credentialsForCurrentThread.Password);
-            }
-
-            return CreateConnectionForSpecificCredentials(UserName, Password);
+            return CreateConnectionForSpecificCredentials(UserNameInternal, PasswordInternal);
         }
 
         private IConnection CreateConnectionForSpecificCredentials(string userName, string password)
@@ -120,6 +119,56 @@ namespace Spring.Messaging.Nms.Connections
         public IConnection CreateConnection(string userName, string password)
         {
             return _wrappedConnectionFactory.CreateConnection(userName, password);
+        }
+
+        public Task<IConnection> CreateConnectionAsync()
+        {
+            return _wrappedConnectionFactory.CreateConnectionAsync(UserNameInternal, PasswordInternal);
+        }
+
+        public Task<IConnection> CreateConnectionAsync(string userName, string password)
+        {
+            return _wrappedConnectionFactory.CreateConnectionAsync(userName, password);
+        }
+
+        public INMSContext CreateContext()
+        {
+            return _wrappedConnectionFactory.CreateContext(UserNameInternal, PasswordInternal);
+        }
+
+        public INMSContext CreateContext(AcknowledgementMode acknowledgementMode)
+        {
+            return _wrappedConnectionFactory.CreateContext(UserNameInternal, PasswordInternal, acknowledgementMode);
+        }
+
+        public INMSContext CreateContext(string userName, string password)
+        {
+            return _wrappedConnectionFactory.CreateContext(userName, password);
+        }
+
+        public INMSContext CreateContext(string userName, string password, AcknowledgementMode acknowledgementMode)
+        {
+            return _wrappedConnectionFactory.CreateContext(userName, password, acknowledgementMode);
+        }
+
+        public Task<INMSContext> CreateContextAsync()
+        {
+            return _wrappedConnectionFactory.CreateContextAsync(UserNameInternal, PasswordInternal);
+        }
+
+        public Task<INMSContext> CreateContextAsync(AcknowledgementMode acknowledgementMode)
+        {
+            return _wrappedConnectionFactory.CreateContextAsync(UserNameInternal, PasswordInternal, acknowledgementMode);
+        }
+
+        public Task<INMSContext> CreateContextAsync(string userName, string password)
+        {
+            return _wrappedConnectionFactory.CreateContextAsync(userName, password);
+        }
+
+        public Task<INMSContext> CreateContextAsync(string userName, string password, AcknowledgementMode acknowledgementMode)
+        {
+            return _wrappedConnectionFactory.CreateContextAsync(userName, password, acknowledgementMode);
         }
 
         public Uri BrokerUri
