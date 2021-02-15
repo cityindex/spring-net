@@ -200,11 +200,15 @@ namespace Spring.Messaging.Nms.Connections
             ISession txSession = A.Fake<ISession>();
             ISession nonTxSession = A.Fake<ISession>();
             A.CallTo(() => connectionFactory.CreateConnection()).Returns(connection).Once();
+            A.CallTo(() => connectionFactory.CreateConnectionAsync()).Returns(connection).Once();
 
             A.CallTo(() => connection.CreateSession(AcknowledgementMode.Transactional)).Returns(txSession).Once();
+            A.CallTo(() => connection.CreateSessionAsync(AcknowledgementMode.Transactional)).Returns(txSession).Once();
+            
             A.CallTo(() => txSession.Transacted).Returns(true).Twice();
 
             A.CallTo(() => connection.CreateSession(AcknowledgementMode.ClientAcknowledge)).Returns(nonTxSession).Once();
+            A.CallTo(() => connection.CreateSessionAsync(AcknowledgementMode.ClientAcknowledge)).Returns(nonTxSession).Once();
 
             CachingConnectionFactory scf = new CachingConnectionFactory(connectionFactory);
             scf.ReconnectOnException = false;

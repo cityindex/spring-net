@@ -45,12 +45,12 @@ namespace Spring.Messaging.Nms.Connections
 
         public Task<ISession> CreateSessionAsync()
         {
-            throw new NotImplementedException();
+            return Task.FromResult(CreateSession());
         }
 
         public Task<ISession> CreateSessionAsync(AcknowledgementMode acknowledgementMode)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(CreateSession(acknowledgementMode));
         }
 
         public ISession CreateSession(AcknowledgementMode acknowledgementMode, TimeSpan requestTimeout)
